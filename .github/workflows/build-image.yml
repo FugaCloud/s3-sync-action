@@ -68,8 +68,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=s3,blobs_prefix=cache/${{ github.repository }}/,manifests_prefix=cache/${{ github.repository }}/,use_path_style=true,endpoint_url=${{ vars.S3_CACHE_URL }},access_key_id=${{ vars.S3_CACHE_USER }},secret_access_key=${{ secrets.S3_CACHE_PW }},region=${{ vars.S3_CACHE_REGION }},bucket=${{ vars.S3_CACHE_BUCKET }}
-          cache-to: type=s3,blobs_prefix=cache/${{ github.repository }}/,manifests_prefix=cache/${{ github.repository }}/,use_path_style=true,endpoint_url=${{ vars.S3_CACHE_URL }},access_key_id=${{ vars.S3_CACHE_USER }},secret_access_key=${{ secrets.S3_CACHE_PW }},region=${{ vars.S3_CACHE_REGION }},bucket=${{ vars.S3_CACHE_BUCKET }},mode=max
+          cache-from: type=s3,blobs_prefix=cache/${{ github.repository }}/,manifests_prefix=cache/${{ github.repository }}/,use_path_style=true,endpoint_url=${{ vars.S3_CACHE_URL }},access_key_id=${{ secrets.S3_CACHE_USER }},secret_access_key=${{ secrets.S3_CACHE_PW }},region=${{ vars.S3_CACHE_REGION }},bucket=${{ vars.S3_CACHE_BUCKET }}
+          cache-to: type=s3,blobs_prefix=cache/${{ github.repository }}/,manifests_prefix=cache/${{ github.repository }}/,use_path_style=true,endpoint_url=${{ vars.S3_CACHE_URL }},access_key_id=${{ secrets.S3_CACHE_USER }},secret_access_key=${{ secrets.S3_CACHE_PW }},region=${{ vars.S3_CACHE_REGION }},bucket=${{ vars.S3_CACHE_BUCKET }},mode=max
           build-args: |
             VERSION=${{ steps.meta.outputs.version || 'dev' }}
 
