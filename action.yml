@@ -3,7 +3,7 @@ description: "Sync a directory to an AWS S3 repository"
 author: Cyso Cloud
 runs:
   using: docker
-  image: registry.fuga.io/public/s3-sync:0.6.0
+  image: registry.fuga.io/public/s3-sync:1.0.0
 branding:
   icon: refresh-cw
   color: green
