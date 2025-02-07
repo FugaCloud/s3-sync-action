@@ -1,4 +1,4 @@
-name: "S3 Sync"
+name: "Sync to S3"
 description: "Sync a directory to an AWS S3 repository"
 author: Cyso Cloud
 runs:
