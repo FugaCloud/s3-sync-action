@@ -1,9 +1,9 @@
-name: "Sync to S3"
+name: "Rclone sync to S3"
 description: "Sync a directory to an AWS S3 repository"
 author: Cyso Cloud
 runs:
   using: docker
-  image: docker://registry.fuga.io/public/s3-sync:1.0.2
+  image: docker://registry.fuga.io/public/s3-sync:staging
 branding:
   icon: refresh-cw
   color: green
