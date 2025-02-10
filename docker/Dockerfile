@@ -11,7 +11,7 @@ LABEL homepage="https://cyso.cloud/"
 LABEL maintainer="Sam Toxopeus <sam@cyso.cloud>"
 
 # https://github.com/aws/aws-cli/blob/master/CHANGELOG.rst
-ENV AWSCLI_VERSION='1.37.15'
+ENV AWSCLI_VERSION='1.36.40'
 
 RUN pip install --quiet --no-cache-dir awscli==${AWSCLI_VERSION}
 

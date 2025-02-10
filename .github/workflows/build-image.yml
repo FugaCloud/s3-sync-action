@@ -3,6 +3,9 @@ name: Publish Artifacts
 on:
   push:
     tags: [ 'image-*.*.*' ]
+    branches:
+    - staging
+    - master
 
 env:
   REGISTRY: ${{ vars.FUGA_REGISTRY_FQDN }}
