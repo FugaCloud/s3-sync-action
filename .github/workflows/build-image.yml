@@ -2,7 +2,7 @@ name: Publish Artifacts
 
 on:
   push:
-    tags: [ 'image-*.*.*' ]
+    tags: [ 'image-v*.*.*' ]
     branches:
     - staging
     - master
