@@ -2,7 +2,7 @@ name: Publish Artifacts
 
 on:
   push:
-    tags: [ '*.*.*' ]
+    tags: [ 'image-*.*.*' ]
 
 env:
   REGISTRY: ${{ vars.FUGA_REGISTRY_FQDN }}
