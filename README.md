@@ -1,3 +1,8 @@
+
+This repository is primarily hosted on Gitea, in addition to this the `staging` and `master` branches are mirrored on [Github](https://github.com/FugaCloud/s3-sync-action).
+
+---
+
 # GitHub Action to Sync S3 Bucket 🔄
 
 This simple action uses the [vanilla AWS CLI](https://docs.aws.amazon.com/cli/index.html) to sync a directory (either from your repository or generated during your workflow) with a remote S3 bucket.
@@ -31,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - uses: jakejarvis/s3-sync-action@master
+    - uses: FugaCloud/s3-sync-action@master
       with:
         args: --acl public-read --follow-symlinks --delete
       env:

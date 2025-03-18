@@ -1,0 +1,35 @@
+name: Mirror tags
+
+on:
+  push:
+    tags: [ 'image-v*.*.*', '*.*.*' ]
+
+jobs:
+  mirror:
+    runs-on: actions-runners-machete
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh/
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+      - name: Add remote to known hosts
+        run: |
+          ssh-keyscan github.com > ~/.ssh/known_hosts
+
+      - name: Add remote and push
+        run: |
+          git remote add mirror git@github.com:FugaCloud/s3-sync-action.git
+          git fetch mirror
+          git push mirror --tags
+
+      - name: Remove SSH Key
+        run: |
+          sudo rm -rf ~/.ssh/
