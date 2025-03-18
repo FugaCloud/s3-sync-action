@@ -1,4 +1,4 @@
-name: Publish Artifacts
+name: Build image
 
 on:
   push:
@@ -15,10 +15,6 @@ env:
 jobs:
   build-image:
     runs-on: actions-runners-machete
-    permissions:  
-      contents: read
-      packages: write
-      id-token: write
 
     outputs:
       version: ${{ steps.meta.outputs.version }}
@@ -33,7 +29,7 @@ jobs:
       # https://github.com/sigstore/cosign-installer
       - name: Install cosign
         if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 #v3.5.0
+        uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a # v3.8.1
         with:
           cosign-release: 'v2.2.4'
 
@@ -41,23 +37,23 @@ jobs:
       # multi-platform images and export cache
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+        uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.FUGA_REGISTRY_USERNAME }}
+          username: ${{ vars.FUGA_REGISTRY_USERNAME }}
           password: ${{ secrets.FUGA_REGISTRY_PASSWORD }}
 
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
       - name: Extract Docker metadata
         id: meta
-        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
+        uses: docker/metadata-action@369eb591f429131d6889c46b94e711f089e6ca96 # v5.6.1
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
@@ -65,28 +61,26 @@ jobs:
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
         id: build-and-push
-        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
         with:
           context: ./docker
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=s3,blobs_prefix=cache/${{ github.repository }}/,manifests_prefix=cache/${{ github.repository }}/,use_path_style=true,endpoint_url=${{ vars.S3_CACHE_URL }},access_key_id=${{ secrets.S3_CACHE_USER }},secret_access_key=${{ secrets.S3_CACHE_PW }},region=${{ vars.S3_CACHE_REGION }},bucket=${{ vars.S3_CACHE_BUCKET }}
-          cache-to: type=s3,blobs_prefix=cache/${{ github.repository }}/,manifests_prefix=cache/${{ github.repository }}/,use_path_style=true,endpoint_url=${{ vars.S3_CACHE_URL }},access_key_id=${{ secrets.S3_CACHE_USER }},secret_access_key=${{ secrets.S3_CACHE_PW }},region=${{ vars.S3_CACHE_REGION }},bucket=${{ vars.S3_CACHE_BUCKET }},mode=max
-          build-args: |
-            VERSION=${{ steps.meta.outputs.version || 'dev' }}
+          cache-from: type=s3,blobs_prefix=cache/${{ github.repository }}/,manifests_prefix=cache/${{ github.repository }}/,use_path_style=true,endpoint_url=${{ vars.FUGA_AMS_S3_ENDPOINT }},access_key_id=${{ vars.FUGA_AMS_S3_USER }},secret_access_key=${{ secrets.FUGA_AMS_S3_PW }},region=${{ vars.FUGA_AMS_S3_DOCKER_CACHE_REGION }},bucket=${{ vars.FUGA_AMS_S3_DOCKER_CACHE_BUCKET }}
+          cache-to: type=s3,blobs_prefix=cache/${{ github.repository }}/,manifests_prefix=cache/${{ github.repository }}/,use_path_style=true,endpoint_url=${{ vars.FUGA_AMS_S3_ENDPOINT }},access_key_id=${{ vars.FUGA_AMS_S3_USER }},secret_access_key=${{ secrets.FUGA_AMS_S3_PW }},region=${{ vars.FUGA_AMS_S3_DOCKER_CACHE_REGION }},bucket=${{ vars.FUGA_AMS_S3_DOCKER_CACHE_BUCKET }},mode=max
 
-      # Sign the resulting Docker image digest except on PRs.
-      # This will only write to the public Rekor transparency log when the Docker
-      # repository is public to avoid leaking data.  If you would like to publish
-      # transparency data even for private images, pass --force to cosign below.
-      # https://github.com/sigstore/cosign
-      - name: Sign the published Docker image
-        if: ${{ github.event_name != 'pull_request' }}
-        env:
-          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
-          TAGS: ${{ steps.meta.outputs.tags }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
-        # This step uses the identity token to provision an ephemeral certificate
-        # against the sigstore community Fulcio instance.
-        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+      # # Sign the resulting Docker image digest except on PRs.
+      # # This will only write to the public Rekor transparency log when the Docker
+      # # repository is public to avoid leaking data.  If you would like to publish
+      # # transparency data even for private images, pass --force to cosign below.
+      # # https://github.com/sigstore/cosign
+      # - name: Sign the published Docker image
+      #   if: ${{ github.event_name != 'pull_request' }}
+      #   env:
+      #     # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
+      #     TAGS: ${{ steps.meta.outputs.tags }}
+      #     DIGEST: ${{ steps.build-and-push.outputs.digest }}
+      #   # This step uses the identity token to provision an ephemeral certificate
+      #   # against the sigstore community Fulcio instance.
+      #   run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
