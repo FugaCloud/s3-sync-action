@@ -23,11 +23,11 @@ jobs:
 
       - name: Add remote to known hosts
         run: |
-          ssh-keyscan git.cloud.cyso.dev > ~/.ssh/known_hosts
+          ssh-keyscan github.com > ~/.ssh/known_hosts
 
       - name: Add remote and push
         run: |
-          git remote add mirror ssh://git@git.cloud.cyso.dev/cyso-cloud/flux-machete.git
+          git remote add mirror git@github.com:FugaCloud/s3-sync-action.git
           git fetch mirror
           git push mirror HEAD:${GITHUB_REF##*/} --force
 
