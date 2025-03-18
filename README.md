@@ -20,7 +20,7 @@ It is also possible to add your own required args for `rclone sync`, including [
 
 - `--s3-acl public-read` makes your files publicly readable.
 - `--links` won't hurt and fixes some weird symbolic link problems that may come up.
-- Most importantly, take note of the default behaviour of `rclone sync`, as it for example deletes any files from the destination not no longer present on the source. This may or may not be what you intend.
+- Most importantly, take note of the default behaviour of `rclone sync`, as it for example deletes any files from the destination which no longer present on the source. This may or may not be what you intend.
 - **Optional tip:** If you're uploading the root of your repository, adding `--exclude '.git/*'` prevents your `.git` folder from syncing, which would expose your source code history if your project is closed-source. (To exclude more than one pattern, you must have one `--exclude` flag per exclusion. The single quotes are also important!)
 
 ```yaml
