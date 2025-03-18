@@ -1,56 +1,52 @@
-#!/bin/sh
+#!/bin/bash
 
-set -e
-
-if [ -z "$AWS_S3_BUCKET" ]; then
-  echo "AWS_S3_BUCKET is not set. Quitting."
+if [ -z "${ACCESS_KEY_ID}" ]; then
+  echo "ACCESS_KEY_ID is not set. Quitting."
   exit 1
 fi
 
-if [ -z "$AWS_ACCESS_KEY_ID" ]; then
-  echo "AWS_ACCESS_KEY_ID is not set. Quitting."
+if [ -z "${SECRET_ACCESS_KEY}" ]; then
+  echo "SECRET_ACCESS_KEY is not set. Quitting."
   exit 1
 fi
 
-if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
-  echo "AWS_SECRET_ACCESS_KEY is not set. Quitting."
+if [ -z "${BUCKET}" ]; then
+  echo "BUCKET is not set. Quitting."
   exit 1
 fi
 
-# Default to us-east-1 if AWS_REGION not set.
-if [ -z "$AWS_REGION" ]; then
-  AWS_REGION="us-east-1"
+if [ -z "${DEST_DIR}" ]; then
+  DEST_DIR=""
+else
+  DEST_DIR=${DEST_DIR#/}
+  DEST_DIR=${DEST_DIR%/}
+  DEST_DIR=${DEST_DIR}
 fi
 
-# Override default AWS endpoint if user sets AWS_S3_ENDPOINT.
-if [ -n "$AWS_S3_ENDPOINT" ]; then
-  ENDPOINT_APPEND="--endpoint-url $AWS_S3_ENDPOINT"
+if [ -z "${SOURCE_DIR}" ]; then
+  SOURCE_DIR=./
 fi
 
-# Create a dedicated profile for this action to avoid conflicts
-# with past/future actions.
-# https://github.com/jakejarvis/s3-sync-action/issues/1
-aws configure --profile s3-sync-action <<-EOF > /dev/null 2>&1
-${AWS_ACCESS_KEY_ID}
-${AWS_SECRET_ACCESS_KEY}
-${AWS_REGION}
-text
-EOF
+export RCLONE_CONFIG_TARGETS3_TYPE="s3"
+export RCLONE_CONFIG_TARGETS3_ACCESS_KEY_ID="${ACCESS_KEY_ID}"
+export RCLONE_CONFIG_TARGETS3_SECRET_ACCESS_KEY="${SECRET_ACCESS_KEY}"
 
-# Sync using our dedicated profile and suppress verbose messages.
-# All other flags are optional via the `args:` directive.
-sh -c "aws s3 sync ${SOURCE_DIR:-.} s3://${AWS_S3_BUCKET}/${DEST_DIR} \
-              --profile s3-sync-action \
-              --no-progress \
-              ${ENDPOINT_APPEND} $*"
+if [ -n "${ENDPOINT}" ]; then
+  export RCLONE_CONFIG_TARGETS3_PROVIDER="other"
+  export RCLONE_CONFIG_TARGETS3_ENDPOINT="${ENDPOINT}"
+else
+  export RCLONE_CONFIG_TARGETS3_PROVIDER="AWS"
+fi
 
-# Clear out credentials after we're done.
-# We need to re-run `aws configure` with bogus input instead of
-# deleting ~/.aws in case there are other credentials living there.
-# https://forums.aws.amazon.com/thread.jspa?threadID=148833
-aws configure --profile s3-sync-action <<-EOF > /dev/null 2>&1
-null
-null
-null
-text
-EOF
+if [ -n "${REGION}" ]; then
+  export RCLONE_CONFIG_TARGETS3_REGION="${REGION}"
+fi
+
+rclone sync "${SOURCE_DIR}" "targets3:${BUCKET}/${DEST_DIR}" $* || { echo 'Failed syncing the directory to Object Storage' ; exit 1; }
+
+export RCLONE_CONFIG_TARGETS3_TYPE=""
+export RCLONE_CONFIG_TARGETS3_PROVIDER=""
+export RCLONE_CONFIG_TARGETS3_ENDPOINT=""
+export RCLONE_CONFIG_TARGETS3_REGION=""
+export RCLONE_CONFIG_TARGETS3_ACCESS_KEY_ID=""
+export RCLONE_CONFIG_TARGETS3_SECRET_ACCESS_KEY=""
