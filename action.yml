@@ -1,5 +1,5 @@
 name: "Sync to S3"
-description: "Sync a directory to an AWS S3 repository"
+description: "Sync a directory to a bucket in an S3-compliant Object Storage"
 author: Cyso Cloud
 runs:
   using: docker
