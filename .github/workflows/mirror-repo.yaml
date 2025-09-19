@@ -27,7 +27,7 @@ jobs:
 
       - name: Add remote and push
         run: |
-          git remote add mirror git@github.com:FugaCloud/s3-sync-action.git
+          git remote add mirror git@github.com:cyso/s3-sync-action.git
           git fetch mirror
           git push mirror HEAD:${GITHUB_REF##*/} --force
 
